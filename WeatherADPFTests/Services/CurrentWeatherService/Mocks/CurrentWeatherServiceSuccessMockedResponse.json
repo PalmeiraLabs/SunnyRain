@@ -1,0 +1,16 @@
+{
+  "weather": [
+    {
+      "main": "Clouds",
+      "description": "scattered clouds",
+      "icon": "03d"
+    }
+  ],
+  "main": {
+    "temp": 20.0,
+    "feels_like": 22.0,
+    "temp_min": 15.0,
+    "temp_max": 23.0
+  },
+  "name": "Buenos Aires"
+}
