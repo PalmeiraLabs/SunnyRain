@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WeatherLocationPickerView: View {
     @Binding var selectedLocation: WeatherLocationDataModel
-
+    
     var body: some View {
         Picker("Location", selection: $selectedLocation) {
             ForEach(WeatherLocationDataModel.allCases) { location in
@@ -19,4 +19,9 @@ struct WeatherLocationPickerView: View {
         }
         .pickerStyle(.menu)
     }
+}
+
+#Preview {
+    @Previewable @State var selectedLocation: WeatherLocationDataModel = .montevideo
+    WeatherLocationPickerView(selectedLocation: $selectedLocation)
 }

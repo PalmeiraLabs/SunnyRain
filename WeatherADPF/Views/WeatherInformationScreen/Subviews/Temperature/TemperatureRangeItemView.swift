@@ -18,6 +18,6 @@ struct TemperatureRangeItemView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     TemperatureRangeItemView(temperatureText: "12", title: "Min T.")
 }

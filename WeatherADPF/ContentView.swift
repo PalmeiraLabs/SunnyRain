@@ -7,15 +7,25 @@
 
 import SwiftUI
 
+struct WeatherInformationScreenFactory {
+    static func create() -> some View {
+        let currentWeatherService = CurrentWeatherService()
+        let locationManager = LocationManager()
+        let locationStorage = LocationStorage()
+        let viewModel = WeatherInformationScreenViewModel(currentWeatherService: currentWeatherService, locationManager: locationManager, locationStorage: locationStorage)
+        
+        return WeatherInformationScreenView(viewModel: viewModel)
+    }
+}
+
 struct ContentView: View {
-    @StateObject private var viewModel = WeatherInformationScreenViewModel(currentWeatherService: CurrentWeatherService())
-                                                                           
     var body: some View {
-        WeatherInformationScreenView(viewModel: viewModel)
-        .padding()
+        WeatherInformationScreenFactory.create()
+            .padding()
     }
 }
 
 #Preview {
     ContentView()
 }
+

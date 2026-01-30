@@ -19,6 +19,6 @@ struct TemperatureRangeView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     TemperatureRangeView(minTemperature: "17", maxTemperature: "26")
 }

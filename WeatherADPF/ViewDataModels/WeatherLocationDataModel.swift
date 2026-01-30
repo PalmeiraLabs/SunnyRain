@@ -15,20 +15,20 @@ enum WeatherLocationDataModel: String, Identifiable, CaseIterable {
     var id: String { rawValue }
 
     var title: String {
-        switch self {
-        case .currentLocation: return "Current location"
-        case .london: return "London"
-        case .montevideo: return "Montevideo"
-        case .buenosAires: return "Buenos Aires"
+        return switch self {
+        case .currentLocation: "Current location"
+        case .london: "London"
+        case .montevideo: "Montevideo"
+        case .buenosAires: "Buenos Aires"
         }
     }
 
-    var cityQuery: String? {
-        switch self {
-        case .currentLocation: return nil
-        case .london: return "London"
-        case .montevideo: return "Montevideo"
-        case .buenosAires: return "Buenos Aires"
+    var cityQuery: String {
+        return switch self {
+        case .currentLocation: ""
+        case .london: "London"
+        case .montevideo: "Montevideo"
+        case .buenosAires: "Buenos Aires"
         }
     }
 }
