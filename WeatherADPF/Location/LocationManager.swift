@@ -7,55 +7,83 @@
 
 import CoreLocation
 import Foundation
+import Combine
 
-@MainActor
-final class LocationManager: NSObject, ObservableObject {
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus
-    @Published private(set) var currentLocation: CLLocation?
+struct Location {
+    let latitude, longitude: Double
+}
+
+enum AuthorizationStatus {
+    case valid, notDetermined, notGranted
+}
+
+protocol LocationManagerProtocol {
+    var authorizationStatus:  CurrentValueSubject<AuthorizationStatus, Never> { get }
+    var currentLocation: CurrentValueSubject<Location?, Never> { get }
+    func requestLocationPermission()
+    func requestCurrentLocation()
+}
+
+struct CLAuthorizationStatusMapper {
+    let status: CLAuthorizationStatus
+    func mapToAuthorizationStatus() -> AuthorizationStatus {
+        return switch status {
+        case .authorizedAlways, .authorizedWhenInUse, .authorized:
+                .valid
+        case .notDetermined:
+                .notDetermined
+        case .restricted, .denied:
+            fallthrough
+        @unknown default:
+                .notGranted
+        }
+    }
+}
+
+final class LocationManager: NSObject, LocationManagerProtocol {
+    private(set) var authorizationStatus:  CurrentValueSubject<AuthorizationStatus, Never>
+    private(set) var currentLocation: CurrentValueSubject<Location?, Never>
     private let manager: CLLocationManager
-
+    
     override init() {
-        self.manager = CLLocationManager()
-        self.authorizationStatus = manager.authorizationStatus
+        manager = CLLocationManager()
+        authorizationStatus = .init(CLAuthorizationStatusMapper(status: manager.authorizationStatus).mapToAuthorizationStatus())
+        currentLocation = .init(nil)
         super.init()
         manager.delegate = self
     }
-
+    
     func requestLocationPermission() {
         manager.requestWhenInUseAuthorization()
     }
-
+    
     func requestCurrentLocation() {
         manager.requestLocation()
     }
 }
 
-extension LocationManager: CLLocationManagerDelegate {
-    nonisolated func locationManager(
+extension LocationManager: @MainActor CLLocationManagerDelegate {
+    func locationManager(
         _ manager: CLLocationManager,
         didChangeAuthorization status: CLAuthorizationStatus
     ) {
-        Task { @MainActor in
-            self.authorizationStatus = status
-
-            if status == .authorizedWhenInUse || status == .authorizedAlways {
-                self.manager.requestLocation()
-            }
+        self.authorizationStatus.send(CLAuthorizationStatusMapper(status: status).mapToAuthorizationStatus())
+        
+        if status == .authorizedWhenInUse || status == .authorizedAlways {
+            self.manager.requestLocation()
         }
     }
-
-    nonisolated func locationManager(
+    
+    func locationManager(
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
     ) {
         guard let location = locations.first else { return }
-
-        Task { @MainActor in
-            self.currentLocation = location
-        }
+        
+        self.currentLocation.send(Location(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude))
     }
-
-    nonisolated func locationManager(
+    
+    func locationManager(
         _ manager: CLLocationManager,
         didFailWithError error: Error
     ) {
